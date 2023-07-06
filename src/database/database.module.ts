@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 
+import { Cat } from 'src/cats/cat.entity';
+
 @Module({
     imports: [
         ConfigModule.forRoot(),
@@ -12,7 +14,8 @@ import { ConfigModule } from '@nestjs/config';
           username: process.env.PG_USER,
           password: process.env.PG_PASSWORD,
           database: process.env.PG_DB,
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          // entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          entities: [Cat],
           synchronize: true,
         }),
       ]

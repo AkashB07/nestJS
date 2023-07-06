@@ -1,22 +1,18 @@
-import { Controller, Get, Query, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, Headers, Res } from '@nestjs/common';
-import { CreateCatDto } from './dto/create-cat.dto.';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, NotFoundException, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CatsService } from './cats.service';
-import { Cat } from './interfaces/cat.interface';
+import { Cat } from './cat.entity';
 
 @Controller('cat')
 
 export class CatsController {
 
-    constructor(private catsService: CatsService) { }
+    constructor(private readonly catsService: CatsService) { }
 
     @Post()
     @HttpCode(201)
-    create(@Res() res: Response, @Body() cat: CreateCatDto,  @Headers() auth: string) {
-        this.catsService.create(cat);
-        console.log(auth);
-        // return `${cat}`;
-        res.status(HttpStatus.CREATED).json({ cat });
+    async create(@Body() cat: Cat): Promise<Cat> {
+        return this.catsService.create(cat);
     }
 
     @Get()
@@ -24,30 +20,37 @@ export class CatsController {
         return this.catsService.findAll();
     }
 
-
-    // @Get()
-    // findAll(@Res() res: Response, @Query() query: any) {
-    //     // return `This action returns all cats (limit: ${query.limit} items)`;
-    //     res.status(HttpStatus.OK).send(`This action returns all cats (limit: ${query.limit} items)`)
-    // }
-
     @Get(':id')
-    findOne(@Res() res: Response, @Param('id') id: string) {
-        // return `This action returns a #${id} cat`;
-        res.status(HttpStatus.OK).send(`This action returns a #${id} cat`);
+    async findOne(@Param('id') id: number): Promise<Cat> {
+        const user = await this.catsService.findOne(id);
+        if (!user) {
+            throw new NotFoundException('User does not exist!');
+        } else {
+            return user;
+        }
     }
+
 
     @Put(':id')
-    update(@Res() res: Response, @Param('id') id: string, @Body() updateCatDto: CreateCatDto) {
-        console.log(updateCatDto)
-        // return `This action updates a #${id} cat`;
-        res.status(HttpStatus.OK).json({ updateCatDto });
+    async update(@Param('id') id: number, @Body() user: Cat): Promise<any> {
+        return this.catsService.update(id, user);
     }
 
+    // @Delete(':id')
+    // remove(@Res() res: Response, @Param('id') id: string) {
+    //     // return `This action removes a #${id} cat`;
+    //     res.status(HttpStatus.OK).send(`This action removes a #${id} cat`);
+    // }
+
     @Delete(':id')
-    remove(@Res() res: Response, @Param('id') id: string) {
-        // return `This action removes a #${id} cat`;
-        res.status(HttpStatus.OK).send(`This action removes a #${id} cat`);
+    async delete(@Res() res: Response, @Param('id') id: number): Promise<any> {
+        //handle error if user does not exist
+        const cat = await this.catsService.findOne(id);
+        if (!cat) {
+            throw new NotFoundException('Cat does not exist!');
+        }
+        this.catsService.delete(id)
+        return  res.status(HttpStatus.OK).json({message: `Succesfully deleted`});
     }
 
 }
