@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, NotFoundException, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, HttpCode, HttpStatus, NotFoundException, Res} from '@nestjs/common';
 import { Response } from 'express';
+
 import { CatsService } from './cats.service';
 import { Cat } from './cat.entity';
 
@@ -36,11 +37,6 @@ export class CatsController {
         return this.catsService.update(id, user);
     }
 
-    // @Delete(':id')
-    // remove(@Res() res: Response, @Param('id') id: string) {
-    //     // return `This action removes a #${id} cat`;
-    //     res.status(HttpStatus.OK).send(`This action removes a #${id} cat`);
-    // }
 
     @Delete(':id')
     async delete(@Res() res: Response, @Param('id') id: number): Promise<any> {
@@ -50,7 +46,7 @@ export class CatsController {
             throw new NotFoundException('Cat does not exist!');
         }
         this.catsService.delete(id)
-        return  res.status(HttpStatus.OK).json({message: `Succesfully deleted`});
+        return res.status(HttpStatus.OK).json({ message: `Succesfully deleted` });
     }
 
 }
