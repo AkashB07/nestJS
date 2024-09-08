@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AuthCodeVerification {
+  id             Int      @id @default(autoincrement())
+  type           AuthCodeVerificationType
+  code_hash      String?  @map("code_hash")
+  user_id        String?  @map("user_id")
+  created_at     DateTime @default(now()) @map("created_at")
+  updated_at     DateTime @updatedAt @map("updated_at")
+
+  // Define relationships if any
+  // user          User?    @relation(fields: [user_id], references: [id])
+
+  @@map("auth_code_verification")
+}
+
+enum AuthCodeVerificationType {
+  // Define enum values based on AuthCodeVerificationTypeEnum
+  set_password
+  reset_passwordss
+  // Add other enum values here as needed
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone_no      String? 
+  is_active     Boolean  @default(true)
+  is_verified   Boolean  @default(false)
+  is_super_user Boolean  @default(false)
+  password_hash String?  @map("password_hash")
+  last_signed_in DateTime? 
+  refresh_token String?  @map("refresh_token")
+  created_at    DateTime @default(now()) @map("created_at")
+  updated_at    DateTime @updatedAt @map("updated_at")
+
+  created_by    User?    @relation("CreatedBy", fields: [created_byId], references: [id])
+  created_byId  String?  @map("created_by")
+
+  updated_by    User?    @relation("UpdatedBy", fields: [updated_byId], references: [id])
+  updated_byId  String?  @map("updated_by")
+
+  // Opposite relations
+  createdBy     User[]   @relation("CreatedBy")
+  updatedBy     User[]   @relation("UpdatedBy")
+  
+  @@map("user")
+}
+

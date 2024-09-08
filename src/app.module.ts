@@ -4,10 +4,11 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidator } from './common/validator/config.validator';
 import { LoggerModule } from 'nestjs-pino';
-import { DatabaseModule } from './database/database.module';
-import { AuthModule } from './modules/auth/auth.module';
+// import { DatabaseModule } from './database/database.module';
+// import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
-import { ListManagementModule } from './modules/list-management/list-management.module';
+// import { ListManagementModule } from './modules/list-management/list-management.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [
@@ -28,10 +29,11 @@ import { ListManagementModule } from './modules/list-management/list-management.
         };
       },
     }),
-    DatabaseModule,
-    AuthModule,
+    // DatabaseModule,
+    // AuthModule,
     UsersModule,
-    ListManagementModule,
+    // ListManagementModule,
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

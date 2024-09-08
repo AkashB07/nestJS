@@ -14,7 +14,7 @@ import { json, urlencoded } from 'express';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { TypeORMExceptionFilter } from './common/filters/typeorm-exception.filter'; 
+// import { TypeORMExceptionFilter } from './common/filters/typeorm-exception.filter'; 
 import { HttpExceptionsFilter } from './common/filters/http-exception.filter';
 import { NodeEnvEnum } from './common/enum/config.enum';
 
@@ -36,7 +36,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(
     new HttpExceptionsFilter(),
-    new TypeORMExceptionFilter(),
+    // new TypeORMExceptionFilter(),
   );
 
   // Setup Swagger Docs
