@@ -15,7 +15,7 @@ import { join } from 'node:path';
         port: configService.get('TYPEORM_PORT'),
         username: configService.get('TYPEORM_USERNAME'),
         password: configService.get('TYPEORM_PASSWORD'),
-        schema: configService.get('TYPEORM_SCHEMA'), 
+        // schema: configService.get('TYPEORM_SCHEMA'), 
         database: configService.get('TYPEORM_DATABASE'),
         entities: [
           join(
