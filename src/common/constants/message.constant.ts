@@ -20,5 +20,4 @@ export const Messages = {
   DOMAIN_EXISTS: 'Domain Name Already Exists',
   CLIENT_NOT_FOUND: 'Client Not Found',
   INVITE_SENT_SUCCESS: 'Invite Sent Successfully',
-  CURRENCY_NOT_FOUND: 'Currency Not Found',
 };

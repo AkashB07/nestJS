@@ -1,29 +1,24 @@
-// import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-// import { ModuleRef } from '@nestjs/core';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { IQueryPagination } from 'src/common/interfaces/query.interface';
-// import {
-//   getPaginationObject,
-//   getSkipAndLimitFromQuery,
-// } from 'src/common/utils/pagination.util';
-// import { Repository } from 'typeorm';
-// import { CreateListItemDto } from '../dto/create-list-item.dto';
-// import { FindListItemByGroupDTO } from '../dto/find-list-by-group-code.dto';
-// import { UpdateListItemDto } from '../dto/update-list-item.dto';
-// import { ListItem } from '../entities/list-item.entity';
-// import { ListGroupsService } from './list-groups.service';
-// import { IFindItem } from '../interfaces/list-management.interface';
-// import { TypeormOrderByEnum } from 'src/common/enum/filter.enum';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { IQueryPagination } from 'src/common/interfaces/query.interface';
+import {
+  getPaginationObject,
+  getSkipAndLimitFromQuery,
+} from 'src/common/utils/pagination.util';
+import { CreateListItemDto } from '../dto/create-list-item.dto';
+import { FindListItemByGroupDTO } from '../dto/find-list-by-group-code.dto';
+import { UpdateListItemDto } from '../dto/update-list-item.dto';
+import { ListGroupsService } from './list-groups.service';
+import { IFindItem } from '../interfaces/list-management.interface';
+import { TypeormOrderByEnum } from 'src/common/enum/filter.enum';
 
-// @Injectable()
-// export class ListItemsService {
+@Injectable()
+export class ListItemsService {
 
-//   constructor(
-//     @InjectRepository(ListItem)
-//     private listItemRepository: Repository<ListItem>,
-//     private readonly listGroupsService: ListGroupsService,
-//     protected moduleRef: ModuleRef,
-//   ) { }
+  constructor(
+    private readonly listGroupsService: ListGroupsService,
+    protected moduleRef: ModuleRef,
+  ) { }
 
 //   async create(
 //     groupId: number,
@@ -196,4 +191,4 @@
 
 //     return await query.getOne();
 //   }
-// }
+}

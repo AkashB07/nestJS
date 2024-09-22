@@ -4,8 +4,8 @@ export enum FilterStatusDefaultEnum {
 }
 
 export enum TypeormOrderByEnum {
-  ASCENDING = 'ASC',
-  DESCENDING = 'DESC',
+  ASCENDING = 'asc',
+  DESCENDING = 'desc',
 }
 
 export enum SortByDefaultEnum {

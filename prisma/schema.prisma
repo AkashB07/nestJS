@@ -13,11 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum AuthCodeVerificationType {
+  set_password
+  reset_password
+}
+
 model AuthCodeVerification {
   id             Int      @id @default(autoincrement())
   type           AuthCodeVerificationType
-  code_hash      String?  @map("code_hash")
-  user_id        String?  @map("user_id")
+  code_hash      String? 
+  user_id        String? 
   created_at     DateTime @default(now()) @map("created_at")
   updated_at     DateTime @updatedAt @map("updated_at")
 
@@ -27,12 +32,6 @@ model AuthCodeVerification {
   @@map("auth_code_verification")
 }
 
-enum AuthCodeVerificationType {
-  // Define enum values based on AuthCodeVerificationTypeEnum
-  set_password
-  reset_passwordss
-  // Add other enum values here as needed
-}
 
 model User {
   id            String   @id @default(uuid())
@@ -57,7 +56,54 @@ model User {
   // Opposite relations
   createdBy     User[]   @relation("CreatedBy")
   updatedBy     User[]   @relation("UpdatedBy")
+
+  // Relations to ListGroup
+  createdGroups ListGroup[] @relation("CreatedBy")
+  updatedGroups ListGroup[] @relation("UpdatedBy")
+
+  // Relations to ListItem
+  createdItems  ListItem[]  @relation("CreatedBy")
+  updatedItems  ListItem[]  @relation("UpdatedBy")
   
   @@map("user")
 }
 
+model ListGroup {
+  id              Int       @id @default(autoincrement())
+  text            String
+  code            String    @unique
+  is_active       Boolean   @default(true)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  
+ created_by    User?    @relation("CreatedBy", fields: [created_byId], references: [id], onDelete: SetNull)
+  created_byId  String?  @map("created_by")
+
+  updated_by    User?    @relation("UpdatedBy", fields: [updated_byId], references: [id], onDelete: SetNull)
+  updated_byId  String?  @map("updated_by")
+
+  // ListItem relation
+  items           ListItem[] @relation("GroupItems") // One-to-many relationship
+
+   @@map("list_group")
+}
+
+model ListItem {
+  id              Int        @id @default(autoincrement())
+  text            String
+  is_active       Boolean    @default(true)
+  
+  group_id        Int
+  group           ListGroup  @relation("GroupItems", fields: [group_id], references: [id], onDelete: Cascade)
+
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @updatedAt
+
+  created_by    User?    @relation("CreatedBy", fields: [created_byId], references: [id], onDelete: SetNull)
+  created_byId  String?  @map("created_by")
+
+  updated_by    User?    @relation("UpdatedBy", fields: [updated_byId], references: [id], onDelete: SetNull)
+  updated_byId  String?  @map("updated_by")
+
+  @@map("list_item")
+}
