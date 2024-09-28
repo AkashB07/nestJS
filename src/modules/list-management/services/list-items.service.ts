@@ -10,185 +10,218 @@ import { FindListItemByGroupDTO } from '../dto/find-list-by-group-code.dto';
 import { UpdateListItemDto } from '../dto/update-list-item.dto';
 import { ListGroupsService } from './list-groups.service';
 import { IFindItem } from '../interfaces/list-management.interface';
-import { TypeormOrderByEnum } from 'src/common/enum/filter.enum';
+import { PrismaOrderByEnum } from 'src/common/enum/filter.enum';
+import { PrismaService } from 'prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ListItemsService {
 
   constructor(
+    private readonly prisma: PrismaService,
     private readonly listGroupsService: ListGroupsService,
     protected moduleRef: ModuleRef,
   ) { }
 
-//   async create(
-//     groupId: number,
-//     createListItemDto: CreateListItemDto,
-//     user_id: string,
-//   ) {
-//     const listGroup = await this.listGroupsService.findById(groupId);
-//     const listItemData = {
-//       ...createListItemDto,
-//       group: listGroup,
-//     };
-//     const res = await this.findOne({
-//       group: groupId,
-//       text: createListItemDto.text,
-//     });
-//     if (res)
-//       throw new HttpException(
-//         `List Item ${createListItemDto.text} already present in List Group ${listGroup.text}`,
-//         HttpStatus.NOT_FOUND,
-//       );
-//     const listItem = await this.listItemRepository.save(listItemData);
-//     return this.findById(listItem.id);
-//   }
+  async create(
+    groupId: number,
+    createListItemDto: CreateListItemDto,
+    user_id: string,
+  ) {
+    const listGroup = await this.listGroupsService.findById(groupId);
+    const listItemData = {
+      ...createListItemDto,
+      group: {
+        connect: { id: listGroup.id },
+      },
+      // created_byId : user_id,
+      created_by: {
+        connect: { id: user_id },
+      },
+    };
+    const res = await this.findOne({
+      group: groupId,
+      text: createListItemDto.text,
+    });
+    if (res)
+      throw new HttpException(
+        `List Item ${createListItemDto.text} already present in List Group ${listGroup.text}`,
+        HttpStatus.NOT_FOUND,
+      );
+    const listItem = await this.prisma.listItem.create({
+      data: listItemData,
+    });
+    return this.findById(listItem.id);
+  }
 
-//   async findById(id: number) {
-//     const listItem = await this.listItemRepository.findOne({
-//       where: { id: id },
-//       relations: ['group'],
-//     });
-//     if (!listItem) {
-//       throw new HttpException('List Item Not Found', HttpStatus.NOT_FOUND);
-//     }
-//     return listItem;
-//   }
+  async findById(id: number) {
+    const listItem = await this.prisma.listItem.findUnique({
+      where: { id: id },
+      include: { group: true },
+    });
 
-//   async findAllByGroupId(groupId: number) {
-//     await this.listGroupsService.findById(groupId);
-//     const [listItems, totalCount] = await this.listItemRepository
-//       .createQueryBuilder('list_item')
-//       .select(['list_item.id', 'list_item.text', 'list_item.is_active'])
-//       .where('list_item.group_id = :groupId', { groupId })
-//       .orderBy('list_item.text', TypeormOrderByEnum.ASCENDING)
-//       .getManyAndCount();
-//     return { listItems, totalCount };
-//   }
+    if (!listItem) {
+      throw new HttpException('List Item Not Found', HttpStatus.NOT_FOUND);
+    }
+    return listItem;
+  }
 
-//   async findOneListItem(searchQuery): Promise<ListItem> {
-//     const { item_name, group_name, id } = searchQuery;
-//     const query = await this.listItemRepository
-//       .createQueryBuilder('list_item')
-//       .leftJoin('list_item.group', 'group')
-//       .addSelect(['group.id', 'group.text', 'group.code']);
-//     if (id) query.andWhere('list_item.id = :id', { id });
-//     if (item_name) query.andWhere('list_item.text = :item_name', { item_name });
-//     if (group_name) {
-//       query.andWhere('LOWER(TRIM(group.text)) = LOWER(TRIM(:group_name))', {
-//         group_name,
-//       });
-//     }
-//     return await query.getOne();
-//   }
+  async findAllByGroupId(groupId: number) {
+    await this.listGroupsService.findById(groupId);
 
-//   // async findByItemNames(searchQuery) {
-//   //   const { item_names, group_name, Ids } = searchQuery
-//   //   const query = await this.listItemRepository
-//   //     .createQueryBuilder('list_item')
-//   //     .leftJoin('list_item.group', 'group')
-//   //     .addSelect(['group.id', 'group.text', 'group.code']);
-//   //   if (item_names) {
-//   //     query.andWhere('TRIM(list_item.text) IN (:...item_names)', { item_names })
-//   //   }
-//   //   if (group_name) {
-//   //     query.andWhere('LOWER(TRIM(group.text)) = LOWER(TRIM(:group_name))', {
-//   //       group_name,
-//   //     });
-//   //   }
-//   //   if (Ids) {
-//   //     query.andWhere('list_item.id IN (:...Ids)', { Ids })
+    const listItems = await this.prisma.listItem.findMany({
+      where: {
+        group_id: groupId,
+      },
+      orderBy: {
+        text: PrismaOrderByEnum.ASCENDING,
+      },
+    });
 
-//   //   }
+    // Get the total count
+    const totalCount = await this.prisma.listItem.count({
+      where: {
+        group_id: groupId,
+      },
+    });
 
-//   //   return query.getMany();
-//   // }
+    return { listItems, totalCount };
+  }
 
-//   async update(
-//     id: number,
-//     updateListItemDto: UpdateListItemDto,
-//     user_id: string,
-//   ) {
-//     const list = await this.findById(id);
-//     const res = await this.findOne({
-//       group: list.group.id,
-//       text: updateListItemDto.text,
-//     });
-//     if (res && res.id !== id)
-//       throw new HttpException(
-//         `List Item ${updateListItemDto.text} already present in List Group ${list.group.text}`,
-//         HttpStatus.NOT_FOUND,
-//       );
-//     const updadeData: any = {
-//       ...updateListItemDto,
-//       updated_by: user_id,
-//     }
-//     await this.listItemRepository.update(id, updadeData);
-//     return await this.findById(id);
-//   }
+  //   async findOneListItem(searchQuery): Promise<ListItem> {
+  //     const { item_name, group_name, id } = searchQuery;
+  //     const query = await this.listItemRepository
+  //       .createQueryBuilder('list_item')
+  //       .leftJoin('list_item.group', 'group')
+  //       .addSelect(['group.id', 'group.text', 'group.code']);
+  //     if (id) query.andWhere('list_item.id = :id', { id });
+  //     if (item_name) query.andWhere('list_item.text = :item_name', { item_name });
+  //     if (group_name) {
+  //       query.andWhere('LOWER(TRIM(group.text)) = LOWER(TRIM(:group_name))', {
+  //         group_name,
+  //       });
+  //     }
+  //     return await query.getOne();
+  //   }
 
-//   async remove(id: number, user_id: string) {
-//     const deletedListGroup = await this.listItemRepository.delete(id);
-//     if (!deletedListGroup.affected) {
-//       throw new HttpException('List Item Not Found', HttpStatus.NOT_FOUND);
-//     }
-//     return;
-//   }
+  // async findByItemNames(searchQuery) {
+  //   const { item_names, group_name, Ids } = searchQuery
+  //   const query = await this.listItemRepository
+  //     .createQueryBuilder('list_item')
+  //     .leftJoin('list_item.group', 'group')
+  //     .addSelect(['group.id', 'group.text', 'group.code']);
+  //   if (item_names) {
+  //     query.andWhere('TRIM(list_item.text) IN (:...item_names)', { item_names })
+  //   }
+  //   if (group_name) {
+  //     query.andWhere('LOWER(TRIM(group.text)) = LOWER(TRIM(:group_name))', {
+  //       group_name,
+  //     });
+  //   }
+  //   if (Ids) {
+  //     query.andWhere('list_item.id IN (:...Ids)', { Ids })
+  //   }
 
-//   async findAllByGroup(findListItemByGroupDTO: FindListItemByGroupDTO) {
-//     const { group_code, search_text = '', id } = findListItemByGroupDTO;
-//     const { skip, limit } = getSkipAndLimitFromQuery(findListItemByGroupDTO);
+  //   return query.getMany();
+  // }
 
-//     let listGroup;
-//     if (group_code)
-//       listGroup = await this.listGroupsService.findOne({ group_code });
+  async update(
+    id: number,
+    updateListItemDto: UpdateListItemDto,
+    user_id: string,
+  ) {
+    const list = await this.findById(id);
+    const res = await this.findOne({
+      group: list.group.id,
+      text: updateListItemDto.text,
+    });
+    if (res && res.id !== id)
+      throw new HttpException(
+        `List Item ${updateListItemDto.text} already present in List Group ${list.group.text}`,
+        HttpStatus.NOT_FOUND,
+      );
+    const updateData: any = {
+      ...updateListItemDto,
+      updated_by: {
+        connect: { id: user_id },
+      },
+    }
+    await this.prisma.listItem.update({
+      where: { id },
+      data: updateData,
+    });
+    return await this.findById(id);
+  }
 
-//     const query = await this.listItemRepository
-//       .createQueryBuilder('list_item')
-//       .select(['list_item.id', 'list_item.text', 'list_item.is_active']);
-//     if (listGroup)
-//       query.where('list_item.group_id = :group_id', { group_id: listGroup.id });
+  async remove(id: number) {
+    await this.findById(id);
+    await this.prisma.listItem.delete({
+      where: { id },
+    });
+    return;
+  }
 
-//     if (id) query.andWhere('list_item.id = :id', { id });
+  async findAllByGroup(findListItemByGroupDTO: FindListItemByGroupDTO) {
+    const { group_code, search_text = '', id } = findListItemByGroupDTO;
+    const { skip, limit } = getSkipAndLimitFromQuery(findListItemByGroupDTO);
 
-//     if (search_text)
-//       query.andWhere('(list_item.text ILIKE :text)', {
-//         text: `%${search_text}%`,
-//       });
+    let groupFilter = {};
+    if (group_code) {
+      const listGroup = await this.listGroupsService.findOne({ group_code });
+      if (listGroup) {
+        groupFilter = { group_id: listGroup.id };
+      }
+    }
 
-//     query
-//       .skip(skip)
-//       .take(limit)
-//       .orderBy('list_item.text', TypeormOrderByEnum.ASCENDING);
-//     const [listItems, page_count] = await query.getManyAndCount();
-//     const pagination: IQueryPagination = getPaginationObject(
-//       skip,
-//       limit,
-//       page_count,
-//     );
-//     return { listItems, pagination };
-//   }
+    const where: Prisma.ListItemWhereInput = {
+      ...groupFilter,
+      ...(id && { id: +id }),
+      text: search_text ? { contains: search_text, mode: 'insensitive' } : undefined,
+    };
 
-//   async findAllListItems() {
-//     const query = await this.listItemRepository
-//       .createQueryBuilder('list_item')
-//       .leftJoin('list_item.group', 'group')
-//       .addSelect(['group.id'])
-//       .orderBy('list_item.id', TypeormOrderByEnum.ASCENDING);
-//     return await query.getMany();
-//   }
+    const listItems = await this.prisma.listItem.findMany({
+      where,
+      select: {
+        id: true,
+        text: true,
+        is_active: true,
+      },
+      skip: skip,
+      take: limit,
+      orderBy: {
+        text: PrismaOrderByEnum.ASCENDING,
+      },
+    });
+    const page_count = await this.prisma.listItem.count({ where });
 
-//   async findOne(findListGroup: IFindItem): Promise<any> {
-//     const { group, text } = findListGroup;
-//     const query = await this.listItemRepository.createQueryBuilder('list_item');
-//     if (group)
-//       query.andWhere('list_item.group = :group', {
-//         group,
-//       });
-//     if (text)
-//       query.andWhere('list_item.text = :text', {
-//         text,
-//       });
+    const pagination: IQueryPagination = getPaginationObject(skip, limit, page_count);
 
-//     return await query.getOne();
-//   }
+    return { listItems, pagination };
+  }
+
+  async findAllListItems() {
+    const listItems = await this.prisma.listItem.findMany({
+      include: {
+        group: true,
+      },
+      orderBy: {
+        id: PrismaOrderByEnum.ASCENDING,
+      },
+    });
+
+    return listItems;
+  }
+
+  async findOne(findListGroup: IFindItem): Promise<any> {
+    const { group, text } = findListGroup;
+
+    const listItem = await this.prisma.listItem.findFirst({
+      where: {
+        ...(group && { group: { id: group } }), // Use relation filter for group
+        ...(text && { text: text }), // Standard condition for text
+      },
+    });
+
+    return listItem;
+  }
 }

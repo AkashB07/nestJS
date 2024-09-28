@@ -8,11 +8,10 @@ import { hashData } from '../auth/utils/auth.util';
 import {
   FilterStatusDefaultEnum,
   SortByDefaultEnum,
-  TypeormOrderByEnum,
+  PrismaOrderByEnum,
 } from 'src/common/enum/filter.enum';
 import { Messages } from 'src/common/constants/message.constant';
 import { BulkActiveInActiveDto } from 'src/common/dto/bulk-active-inactive.dto';
-import { ConfigService } from '@nestjs/config';
 import {
   getPaginationObject,
   getSkipAndLimitFromQuery,
@@ -50,8 +49,8 @@ export class UsersService {
 
     const orderBy =
       sort_by === SortByDefaultEnum.OLDEST
-        ? TypeormOrderByEnum.ASCENDING
-        : TypeormOrderByEnum.DESCENDING;
+        ? PrismaOrderByEnum.ASCENDING
+        : PrismaOrderByEnum.DESCENDING;
 
     const users = await this.prisma.user.findMany({
       skip,

@@ -9,6 +9,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ListManagementModule } from './modules/list-management/list-management.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { DataModule } from './modules/data/data.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { PrismaModule } from '../prisma/prisma.module';
     UsersModule,
     ListManagementModule,
     PrismaModule,
+    AnalyticsModule,
+    DataModule,
   ],
   controllers: [AppController],
   providers: [AppService],

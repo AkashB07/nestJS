@@ -3,7 +3,7 @@ export enum FilterStatusDefaultEnum {
   INACTIVE = 'inactive',
 }
 
-export enum TypeormOrderByEnum {
+export enum PrismaOrderByEnum {
   ASCENDING = 'asc',
   DESCENDING = 'desc',
 }

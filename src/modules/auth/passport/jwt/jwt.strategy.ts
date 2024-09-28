@@ -22,7 +22,7 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
 
   async validate(payload: any) {
     const val = await this.redisService.getVal('auth', payload.id);
-    if (!val) throw new UnauthorizedException();
+    // if (!val) throw new UnauthorizedException();
     return payload;
   }
 }
